@@ -1,0 +1,462 @@
+using mongodb driver.
+//jshint esversion6
+// Connect to MongoDB: copied from the website() http://mongodb.github.io/node-mongodb-native/3.5/quick-start/quick-start/
+const MongoClient = require('mongodb').MongoClient;
+const assert = require('assert');
+
+// Connection URL
+const url = 'mongodb://localhost:27017';
+
+// Database Name
+const dbName = 'fruitsDB';
+
+// Create a new MongoClient
+const client = new MongoClient(url, { useUnifiedTopology: true } );
+
+// Use connect method to connect to the Server
+client.connect(function(err) {
+  assert.equal(null, err);
+  console.log("Connected successfully to server");
+
+  const db = client.db(dbName);
+  //insert
+//   insertDocuments(db, function() {
+//     client.close();
+// });
+// findDocuments
+findDocuments(db, function() {
+    client.close();
+  });
+});
+// Insert a Document http://mongodb.github.io/node-mongodb-native/3.5/quick-start/quick-start/
+const insertDocuments = function(db, callback) {
+  // Get the documents collection
+  const collection = db.collection('fruits');
+  // Insert some documents
+  collection.insertMany([
+    {
+      name: "Apple",
+      score: 8,
+      review: "Great Fruit"
+    },
+     {
+       name: "Orange",
+       score: 6,
+       review: "Kinda sour"
+     },
+     {
+       name: "Banana",
+       score: 9,
+       review: "Great stuff contains enough"
+     }
+  ], function(err, result) {
+    assert.equal(err, null);
+    assert.equal(3, result.result.n);
+    assert.equal(3, result.ops.length);
+    console.log("Inserted 3 documents into the collection");
+    callback(result);
+  });
+}
+
+//Find All Documents
+const findDocuments = function(db, callback) {
+  // Get the documents collection
+  const collection = db.collection('fruits');
+  // Find some documents
+  collection.find({}).toArray(function(err, fruits) {
+    assert.equal(err, null);
+    console.log("Found the following records");
+    console.log(fruits)
+    callback(fruits);
+  });
+};
+
+
+
+// 24/6/20 L-357- Introduction to Monogooes & 358 using moongoosejs. https://mongoosejs.com/
+
+// hyper
+//shell 1
+run the server
+mongod --dbpath ~/data/db
+
+//shell 2
+run mongo
+% mongo
+> use fruitDB
+switched to db fruitDB
+> show collections
+
+> show dbs
+admin     0.000GB
+config    0.000GB
+fruitsDB  0.000GB
+local     0.000GB
+shopDB    0.000GB
+> use fruitsDB
+switched to db fruitsDB
+> show dbs
+admin     0.000GB
+config    0.000GB
+fruitsDB  0.000GB
+local     0.000GB
+shopDB    0.000GB
+> use fruitsDB
+switched to db fruitsDB
+> db.dropDatabase()        // delete fruitsDB
+{ "dropped" : "fruitsDB", "ok" : 1 }
+
+
+// APP.JS  and in hpyper new shell install mongoose first then
+// for fruitDB to appear again in hyper  need this app
+//jshint esversion6
+// Tues 24/6/20 L-357 Introduction to Mongoose
+
+const mongoose = require('mongoose');  //https://mongoosejs.com/
+mongoose.connect('mongodb://localhost:27017/fruitsDB',{useNewUrlParser: true, useUnifiedTopology: true });
+
+
+// insertDocuments
+const fruitSchema = new mongoose.Schema ({
+  name: String,
+  rating: Number,
+  review: String
+});
+
+const Fruit = mongoose.model("Fruit", fruitSchema);
+
+const fruit = new Fruit({
+  name: "Apple",
+  rating: 7,
+  review: "Pretty solid as a fruit."
+});
+
+fruit.save();
+
+//Find All Documents
+const findDocuments = function(db, callback) {
+// Get the documents collection
+const collection = db.collection('fruits');
+// Find some documents
+collection.find({}).toArray(function(err, fruits) {
+  assert.equal(err, null);
+  console.log("Found the following records");
+  console.log(fruits)
+  callback(fruits);
+});
+};
+
+// continue step 2 in hyper
+
+> show dbs
+admin     0.000GB
+config    0.000GB
+fruitsDB  0.000GB
+local     0.000GB
+shopDB    0.000GB
+> use fruitsDB
+switched to db fruitsDB
+> show collections
+fruits
+> db.fruits.find()
+{ "_id" : ObjectId("5ef35d58cb9411ba237fd91c"), "name" : "Apple", "rating" : 7, "review" : "Pretty solid as a fruit.", "__v" : 0 }
+
+
+
+//shell 3 ()
+1user@Michael-MacBook-Pro-15 desktop % cd FruitProject
+user@Michael-MacBook-Pro-15 FruitProject % npm i mongoose
+npm WARN fruitproject@1.0.0 No repository field.
+
++ mongoose@5.9.20
+added 14 packages from 9 contributors and audited 34 packages in 35.604s
+
+2 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+
+user@Michael-MacBook-Pro-15 FruitProject % node app.js
+
+
+
+//app.js
+// https://mongoosejs.com/docs/index.html ( getting started with moongoose)
+
+//jshint esversion6
+const mongoose = require('mongoose');  //https://mongoosejs.com/
+mongoose.connect('mongodb://localhost:27017/fruitsDB',{useNewUrlParser: true, useUnifiedTopology: true });
+
+// insertDocuments
+const fruitSchema = new mongoose.Schema ({
+  name: String,
+  rating: Number,
+  review: String
+});
+
+const Fruit = mongoose.model("Fruit", fruitSchema);
+
+const fruit = new Fruit({
+  name: "Apple",
+  rating: 7,
+  review: "Pretty solid as a fruit."
+});
+
+// fruit.save();
+
+const personSchema = new mongoose.Schema({
+  name: String,
+  age: Number
+});
+
+const Person = mongoose.model("Person", personSchema);
+
+const person = new Person({
+  name:"John",
+  age: 37
+});
+person.save();
+
+const kiwi = new Fruit({
+  name: "Kiwi",
+  rating: 10,
+  review: "The best Fruit"
+});
+
+const orange = new Fruit({
+  name: "Orange",
+  rating: 4,
+  review: "Too sour for me"
+});
+
+const banana = new Fruit({
+  name: "Banana",
+  rating: 3,
+  review: "Weird texture"
+});
+// Fruit.insertMany([kiwi, orange, banana], function(err){
+//   if (err){
+//     console.log(error);
+//   } else {
+//     console.log("Succefully saved all the fruits to fruitsDB");
+//   }
+// });
+
+//Find All Documents
+Fruit.find(function(err, fruits){
+  if (err){
+    console.log(err);
+  } else {
+
+    mongoose.connection.close();
+
+    fruits.forEach(function(fruit){
+        console.log(fruit.name);
+    });
+
+  }
+});
+
+
+
+
+
+
+
+//jshint esversion6
+ Thurs:25/6/20 l-360 Update and Delete ( CRUD : CREATE: READ: UPDATE: DELETE)
+// Tues 24/6/20 L-357 Introduction to Mongoose
+
+const mongoose = require('mongoose');  //https://mongoosejs.com/ https://mongoosejs.com/docs/index.html
+mongoose.connect('mongodb://localhost:27017/fruitsDB',{useNewUrlParser: true, useUnifiedTopology: true });
+
+
+// insertDocuments
+// thurs 25/6/20 l-359 Data Validation with Mongoose
+const fruitSchema = new mongoose.Schema ({
+  name: {
+    type: String,
+    // required: [true, "Please check data entry, no name specified"]
+  },
+  rating: {
+  type: Number,
+    min: 1,
+    max: 10
+},
+  review: String
+});
+
+const Fruit = mongoose.model("Fruit", fruitSchema);
+
+// this has no name and validation did not allow it to be added to our fruits
+const fruit = new Fruit({
+
+  rating: 10,
+  review: "Peaches are yummy fruit!."
+});
+
+// fruit.save();
+
+
+
+const personSchema = new mongoose.Schema({
+  name: String,
+  age: Number
+});
+
+const Person = mongoose.model("Person", personSchema);
+
+const person = new Person({
+  name:"John",
+  age: 37
+});
+// person.save();
+
+
+
+
+
+
+//Find All Documents ( READ)
+Fruit.find(function(err, fruits){
+  if (err){
+    console.log(err);
+  } else {
+
+    mongoose.connection.close();
+
+    fruits.forEach(function(fruit){
+        console.log(fruit.name);
+    });
+
+  }
+});
+
+// l-360 Update and Delete ( CRUD : CREATE: READ: UPDATE: DELETE)
+            // UPDATE
+// https://mongoosejs.com/docs/api/model.html#model_Model.updateOne
+// got the id from hyper( automatically generated)
+Fruit.updateOne({_id:"5ef4b4a1a90ec5c722bffca5"}, {name: "Peach"}, function(err){
+  if(err){
+    console.log(err);
+  } else {
+    console.log("Succesfully updated the document");
+  }
+});
+
+// Delete
+// https://mongoosejs.com/docs/api/model.html#model_Model.deleteOne
+Fruit.deleteOne({name:"Peach"},function(err){
+  if (err){
+    console.log(err);
+  } else {
+    console.log("Deleted Succesfully");
+  }
+});
+//
+// // Delete Many (i did the challenge)
+// Person.deleteMany({name:"John"}, function(err){
+// if(err){
+//   console.log(err);
+// } else {
+//   console.log("Deleted Many");
+// }
+//
+// });
+
+
+
+
+// L- 361: establishing Relationship with Embedding Documents using Mongoose
+const mongoose = require('mongoose');  //https://mongoosejs.com/ https://mongoosejs.com/docs/index.html
+mongoose.connect('mongodb://localhost:27017/fruitsDB',{useNewUrlParser: true, useUnifiedTopology: true });
+
+
+// insertDocuments
+// thurs 25/6/20 l-359 Data Validation with Mongoose
+const fruitSchema = new mongoose.Schema ({
+  name: {
+    type: String,
+    // required: [true, "Please check data entry, no name specified"]
+  },
+  rating: {
+  type: Number,
+    min: 1,
+    max: 10
+},
+  review: String
+});
+
+const Fruit = mongoose.model("Fruit", fruitSchema);
+
+// this has no name and validation did not allow it to be added to our fruits
+const fruit = new Fruit({
+
+  rating: 10,
+  review: "Peaches are yummy fruit!."
+});
+
+// fruit.save();
+
+
+
+const personSchema = new mongoose.Schema({
+  name: String,
+  age: Number,
+  // L- 361: establishing Relationship with Embedding Documents using Mongoose
+  favouriteFruit: fruitSchema
+});
+
+const Person = mongoose.model("Person", personSchema);
+
+// //  added new fruit for embedding
+// const pineapple = new Fruit({
+//   name: "Pineapple",
+//   rating: 9,
+//   review: "Lovely fruit."
+// })
+//
+// // pineapple.save();
+
+
+// const person = new Person({
+//   name:"Amy",
+//   age: 20,
+//   favouriteFruit: pineapple
+// });
+//
+// // person.save();
+
+// new fruit to be embedding to old person data.
+const mango = new Fruit({
+  name: "Mango",
+  rating: 10,
+  review: "Awesome fruit."
+});
+
+// mango.save();
+
+// update old person with embedding data
+Person.updateOne({name: "John"}, {favouriteFruit: mango}, function(err){
+  if (err) {
+    console.log(err);
+  } else {
+    console.log("Succesfully updated document");
+  }
+});
+
+
+//Find All Documents
+Fruit.find(function(err, fruits){
+  if (err){
+    console.log(err);
+  } else {
+
+    // mongoose.connection.close();
+
+    fruits.forEach(function(fruit){
+        console.log(fruit.name);
+    });
+
+  }
+});
